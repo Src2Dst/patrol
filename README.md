@@ -10,6 +10,6 @@
 	2.	ansible的配置文件为/etc/ansible/ansible.cfg，主机列表为/etc/ansible/hosts，在主机列表文件中对主机按所在机房和所属业务进行了分组
 	3.	使用中，如果主机有功能或IP地址上的变动，需要及时维护主机列表和脚本配置文件并使用ansible将脚本配置文件下发到所有mss主机（对应组：all）
 	$ansible all -m copy -a "src=/opt/patrol dest=/opt" 
-  4.  巡检命令
+	4.  巡检命令
   $ansible [group_name] -m shell -a 'python /opt/patrol/mss.py'
-  5.  主控端如有迁移需求，需要同时拷贝ansible的ansible.cfg和hosts文件。
+	5.  主控端如有迁移需求，需要同时拷贝ansible的ansible.cfg和hosts文件。

@@ -48,9 +48,9 @@ def pidtest(compon, nsec=5):
 	time.sleep(nsec)
 	pid2 = pidof(compon)
 	if pid1 == pid2 and len(pid1.split()) == compons[compon]:
-		logging.debug("%s ok" %compon)
+		logging.debug("%-10s ......ok" %compon)
 	else:
-		logging.warning("%s false" %compon)
+		logging.warning("%-10s ....fail" %compon)
 
 
 def main():
