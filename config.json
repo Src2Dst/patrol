@@ -1,0 +1,17 @@
+{
+	"172.21.111.17": {
+        "compon" : {"sluaiat" : 24, "sluapdss" : 4, "srpcs" : 5}
+                    },
+                                                            
+	"172.21.111.18": {
+		"compon" : {"sluaiat" : 20, "testcom" : 15}
+                    },
+					
+	"172.21.111.40": {
+		"compon" : {"stluarpcs" : 6, "pmacs" : 1}
+					},
+	
+	"172.21.111.12": {
+		"compon" : {"sluaiat" : 24, "sluapdss" : 4}
+					}
+}
