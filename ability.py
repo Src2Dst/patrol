@@ -6,6 +6,7 @@ import subprocess,re
 from multiprocessing import Pool
 
 SRV_ADDRS = 'http://auto-verification.openspeech.cn/'
+SRV_ADDRS_DX = 'http://auto-verification-senhua.openspeech.cn/'
 TIME_FMT = "%Y%m%d"
 DATE = time.strftime(TIME_FMT, time.localtime())
 MAX_PROCESSOR = 20
@@ -22,6 +23,7 @@ def _ab_exec(testline):
 	pat_jid = re.compile(r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}')
 	pat_res = re.compile('"res".*')
 	pat_num = re.compile(r'{"res": (.*?),(.*)')
+	pat_dx = re.compile(r'172\.21\.')
 	#收集结果返回，结果呈现
 	result = []
 	result.append(testline.strip('\n'))
@@ -33,7 +35,12 @@ def _ab_exec(testline):
 	with open(tmp_file, 'w') as fhand:
 		fhand.write(testline)
 	
-	cmd = 'ab -t 60 -v 4 -n 1 -c 1  -p ' + tmp_file + ' -T "text" ' + SRV_ADDRS
+	#森华使用的验证域名不同，根据请求IP进行区分
+	if re.search(pat_dx, testline):
+		cmd = 'ab -t 60 -v 4 -n 1 -c 1  -p ' + tmp_file + ' -T "text" ' + SRV_ADDRS_DX
+	else:
+		cmd = 'ab -t 60 -v 4 -n 1 -c 1  -p ' + tmp_file + ' -T "text" ' + SRV_ADDRS
+	
 	child = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
 	out = child.stdout.read().split('\n')
 
@@ -51,10 +58,11 @@ def _ab_exec(testline):
 			break
 		
 	#结果分析循环
-	for i in [5,10,15,30,60,61]:
+	for i in [5,10,15,30,55,56,57,58,59,60,60,60,61]:
 		time.sleep(i)
 		child = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
 		out = child.stdout.read().split('\n')
+		
 		
 		flag = 0
 		for line in out:
@@ -70,6 +78,7 @@ def _ab_exec(testline):
 				elif re.match(pat_num, line).group(1).strip('"') == '-1':
 					result.append('sreq ' + str(i) + ' FAIL')
 					print 'sreq %s FAIL' %str(i)
+					print out
 					os.remove(tmp_file)
 					return result
 				elif re.match(pat_num, line).group(1).strip('"') == '-2':
@@ -91,7 +100,7 @@ def _ab_exec(testline):
 			return result
 
 
-#定长切分						
+#定长切分
 def list_of_groups(init_list, childern_list_len):
 	list_of_groups = zip(*(iter(init_list),) *childern_list_len)
 	end_list = [list(i) for i in list_of_groups]
@@ -99,6 +108,18 @@ def list_of_groups(init_list, childern_list_len):
 	end_list.append(init_list[-count:]) if count !=0 else end_list
 	return end_list
 
+
+#配置文件过滤
+def conf_filter(config):
+	tmp_fname = config + '.tmp'
+	tmp_file = open(tmp_fname, 'w')
+	with open(config) as conf:
+		for line in conf:
+			line = line.strip()
+			if line and line[0] != '#':
+				tmp_file.write(line+'\n')
+	return tmp_fname
+	
 
 #按照切分长度，进行多进程请求
 def multi_detect(config):
@@ -118,7 +139,8 @@ def multi_detect(config):
 
 
 #串行测试
-'''def multi_detect(config):
+'''
+def multi_detect(config):
 
 	with open(config) as  conf:
 		hconf = conf.readlines()
@@ -128,4 +150,6 @@ def multi_detect(config):
 
 
 if __name__ == '__main__':
-	multi_detect(CONF)
+	temp = conf_filter(CONF)
+	multi_detect(temp)
+	os.remove(temp)
